@@ -65,11 +65,10 @@
   |                   |
   +-------------------+
 
-  Note: This module includes a 120Ω termination resistor (R2).
-  If your CAN bus already has termination at both ends, you may
-  need to remove R2 from the module.
-
-
+  Note: This module includes a 120Ω termination resistor (often labeled "R2" on
+  the SN65HVD230 board silkscreen). If your CAN bus already has termination at
+  both ends, you may need to remove or disable this termination resistor on the
+  module.
   POWER SUPPLY
   ============
   Option A: USB-C from a USB power bank or car USB adapter

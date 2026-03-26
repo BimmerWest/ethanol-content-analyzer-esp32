@@ -1,5 +1,7 @@
 # Ethanol Content Analyzer (ESP32-C3) work in progress, not tested yet
 
+[![Made with AI](https://img.shields.io/badge/Made%20with-AI-lightgrey?style=for-the-badge)](https://github.com/mefengl/made-by-ai)
+
 Open source ethanol content analyzer that reads signals from Continental Flex Fuel sensors and reports ethanol percentage and fuel temperature via serial output.
 
 Based on the [original project](https://github.com/outlandnish/fw-ethanol-content-analyzer) which targeted the Arduino Nano Every (ATmega4809).

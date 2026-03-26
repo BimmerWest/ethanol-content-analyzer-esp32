@@ -1,4 +1,4 @@
-# Ethanol Content Analyzer (ESP32-C3)
+# Ethanol Content Analyzer (ESP32-C3) work in progress, not tested yet
 
 Open source ethanol content analyzer that reads signals from Continental Flex Fuel sensors and reports ethanol percentage and fuel temperature via serial and CAN bus output. CAN messages are compatible with the **Zeitronix ECA-2 CAN Bus** protocol.
 

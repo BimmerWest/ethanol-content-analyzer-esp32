@@ -3,7 +3,8 @@
 // State variables
 float ethanol = 0.f;
 float fuelTemperature = 0.f;
-bool sensorActive = false;
+bool canReady = false;
+uint32_t lastSensorUpdateMs = 0;
 
 // CAN timing
 uint32_t lastCANSend = 0;
@@ -41,7 +42,7 @@ void loop()
   if (newData && calculateFrequency()) {
     frequencyToEthanolContent(frequency, frequencyScaler);
     dutyCycleToFuelTemperature(dutyCycle);
-    sensorActive = true;
+    lastSensorUpdateMs = millis();
     newData = false;
 
     Serial.print("Period (us): ");
@@ -62,7 +63,7 @@ void loop()
 
   // Send CAN message at Zeitronix ECA-2 update rate (4 Hz)
   uint32_t now = millis();
-  if (now - lastCANSend >= ZEITRONIX_CAN_INTERVAL_MS) {
+  if (canReady && (now - lastCANSend >= ZEITRONIX_CAN_INTERVAL_MS)) {
     lastCANSend = now;
     sendZeitronixCANMessage();
   }
@@ -165,13 +166,17 @@ void initCAN() {
     Serial.println("CAN: TWAI driver installed");
   } else {
     Serial.println("CAN: TWAI driver install FAILED");
+    canReady = false;
     return;
   }
 
   if (twai_start() == ESP_OK) {
     Serial.println("CAN: TWAI started (500 Kbps)");
+    canReady = true;
   } else {
     Serial.println("CAN: TWAI start FAILED");
+    twai_driver_uninstall();
+    canReady = false;
   }
 }
 
@@ -197,8 +202,9 @@ void sendZeitronixCANMessage() {
   int tempRaw = (int)roundf(fuelTemperature) + 40;
   msg.data[1] = (uint8_t)constrain(tempRaw, 0, 255);
 
-  // Data[7]: Sensor status
-  msg.data[7] = sensorActive ? ZEITRONIX_SENSOR_OK : ZEITRONIX_SENSOR_FAULT;
+  // Data[7]: Sensor status (FAULT if no updates for >1s)
+  bool sensorOk = (lastSensorUpdateMs > 0) && (millis() - lastSensorUpdateMs < SENSOR_TIMEOUT_MS);
+  msg.data[7] = sensorOk ? ZEITRONIX_SENSOR_OK : ZEITRONIX_SENSOR_FAULT;
 
   esp_err_t result = twai_transmit(&msg, pdMS_TO_TICKS(10));
   if (result != ESP_OK) {

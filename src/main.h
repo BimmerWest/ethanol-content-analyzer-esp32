@@ -27,9 +27,14 @@
 #define ZEITRONIX_SENSOR_OK       0x00
 #define ZEITRONIX_SENSOR_FAULT    0x01
 
+// Sensor timeout
+#define SENSOR_TIMEOUT_MS         1000          // No updates for 1s => FAULT
+
 // State variables
 extern float ethanol;
 extern float fuelTemperature;
+extern bool canReady;
+extern uint32_t lastSensorUpdateMs;
 
 // Frequency and duty cycle readings
 extern float frequency, dutyCycle;

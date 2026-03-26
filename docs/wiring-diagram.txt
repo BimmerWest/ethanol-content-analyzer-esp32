@@ -70,6 +70,36 @@
   need to remove R2 from the module.
 
 
+  VEHICLE CAN BUS TAP POINT - BMW G30 540i (B58)
+  ==============================================
+
+  Tap location: BDC (Body Domain Controller) - behind glove box
+  Connector:    A258*8B (extended equipment version)
+
+  +---------------------------------------------+
+  | A258*8B Connector                            |
+  |                                              |
+  |  Pin 47  -->  PT_CAN_L   0.35  GE/SW         |
+  |               (yellow/black)                 |
+  |                                              |
+  |  Pin 48  -->  PT_CAN_H   0.35  GE/WS         |
+  |               (yellow/white)                 |
+  +---------------------------------------------+
+
+  Wiring:
+    A258*8B Pin 48 (PT_CAN_H, yellow/white) ---twisted pair---> SN65HVD230 CANH
+    A258*8B Pin 47 (PT_CAN_L, yellow/black) ---twisted pair---> SN65HVD230 CANL
+
+  Cable: Unshielded twisted pair, 22 AWG (0.35mm²), ~4-5 meters
+         (CAT5e ethernet cable works - use one twisted pair)
+
+  Routing: BDC (behind glove box) -> under carpet along center
+           tunnel -> under rear seat -> trunk area
+
+  Note: Basic version uses pins 19 (PT_CAN_L) and 20 (PT_CAN_H)
+  on the same connector. Verify your variant before tapping.
+
+
   POWER SUPPLY
   ============
   Option A: USB-C from a USB power bank or car USB adapter

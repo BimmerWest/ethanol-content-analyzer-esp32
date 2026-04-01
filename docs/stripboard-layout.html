@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ethanol Analyzer — Stripboard Layout</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #1a1a2e; color: #eee; padding: 24px; }
+  h1 { font-size: 1.4rem; margin-bottom: 4px; color: #e0e0ff; }
+  h2 { font-size: 1.1rem; margin-bottom: 6px; color: #aab; font-weight: 400; }
+  .subtitle { font-size: 0.85rem; color: #778; margin-bottom: 16px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; }
+  .legend-dot {
+    width: 18px; height: 18px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.45rem; font-weight: 700; flex-shrink: 0;
+  }
+
+  .board-wrap { position: relative; display: inline-block; margin-bottom: 24px; }
+  .board-container {
+    display: inline-grid; gap: 0; padding: 10px;
+    background: #3a2a10; border-radius: 6px; border: 2px solid #5a4a2a;
+  }
+
+  .cell {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.5rem; font-weight: 600; position: relative;
+    cursor: default; transition: transform 0.12s;
+    margin: 1px;
+  }
+  .cell:hover { transform: scale(1.4); z-index: 10; }
+  .cell.hole { background: #4a3a20; border: 1.5px solid #6a5a3a; color: #8a7a5a; font-size: 0.4rem; }
+  .cell.cut { background: #1a1a2e; border: 2px dashed #ff4444; color: #ff6666; font-size: 0.55rem; }
+  .cell.esp-left { background: #2266cc; border: 2px solid #4488ee; color: #fff; }
+  .cell.esp-right { background: #1a5599; border: 2px solid #3377bb; color: #cde; }
+  .cell.esp-body { background: #1a3366; border: 1px solid #2a4477; color: #5577aa; font-size: 0.35rem; }
+  .cell.sn65 { background: #22aa44; border: 2px solid #44cc66; color: #fff; }
+  .cell.j1 { background: #cc2222; border: 2px solid #ee4444; color: #fff; }
+  .cell.j2 { background: #cc8800; border: 2px solid #eeaa22; color: #fff; }
+  .cell.j3 { background: #8822cc; border: 2px solid #aa44ee; color: #fff; }
+  .cell.diode { background: #cc4400; border: 2px solid #ee6622; color: #fff; }
+  .cell.cap-pos { background: #ccaa00; border: 2px solid #eecc22; color: #000; }
+  .cell.cap-neg { background: #888800; border: 2px solid #aaaa22; color: #000; }
+  .cell.resistor { background: #886644; border: 2px solid #aa8866; color: #fff; }
+  .cell.tap { background: #aaaa00; border: 2px solid #cccc22; color: #000; }
+
+  .row-label, .col-label {
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; font-weight: 700; color: #aa9; margin: 1px;
+  }
+  .row-label { justify-content: flex-end; padding-right: 4px; width: 26px; }
+
+  .row-note {
+    width: auto; min-width: 120px; height: 30px;
+    display: flex; align-items: center; padding-left: 8px;
+    font-size: 0.6rem; color: #8a8; margin: 1px; white-space: nowrap;
+  }
+
+  .tooltip {
+    display: none; position: absolute; bottom: 115%; left: 50%; transform: translateX(-50%);
+    background: #000d; color: #fff; padding: 4px 8px; border-radius: 4px;
+    font-size: 0.7rem; white-space: nowrap; z-index: 100; pointer-events: none;
+    border: 1px solid #555;
+  }
+  .cell:hover .tooltip { display: block; }
+
+  .info-cards { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 16px; }
+  .card {
+    background: #16213e; border: 1px solid #334; border-radius: 8px;
+    padding: 12px 16px; min-width: 240px; max-width: 380px;
+  }
+  .card h3 { font-size: 0.85rem; color: #7799cc; margin-bottom: 6px; }
+  .card p, .card li { font-size: 0.75rem; color: #bbc; line-height: 1.5; }
+  .card ul { padding-left: 14px; }
+  .card .wire { display: flex; align-items: center; gap: 5px; margin: 2px 0; font-size: 0.72rem; }
+  .wire-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .wire-red { background: #e44; }
+  .wire-black { background: #555; border: 1px solid #888; }
+  .wire-yellow { background: #cc0; }
+
+  .wire-toggle { margin: 10px 0; display: flex; align-items: center; gap: 12px; }
+  .wire-toggle button {
+    background: #2a3a5e; color: #cde; border: 1px solid #4466aa; border-radius: 6px;
+    padding: 6px 14px; font-size: 0.8rem; cursor: pointer; transition: background 0.15s;
+  }
+  .wire-toggle button:hover { background: #3a4a7e; }
+  .wire-toggle button.active { background: #4466aa; color: #fff; }
+  .wire-toggle span { font-size: 0.75rem; color: #778; }
+
+  .wire-svg {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 5;
+  }
+  .wire-svg line { stroke-linecap: round; transition: opacity 0.2s; }
+  .wire-svg .wire-line { stroke-width: 2.5; opacity: 0.85; }
+  .wire-svg .wire-line.dimmed { opacity: 0.12; }
+  .wire-svg .wire-line.highlighted { stroke-width: 4; opacity: 1; filter: drop-shadow(0 0 4px currentColor); }
+
+  .cell.wire-end { box-shadow: 0 0 0 3px #fff4; }
+  .cell.wire-end-red { box-shadow: 0 0 0 3px #e448; }
+  .cell.wire-end-black { box-shadow: 0 0 0 3px #aaa8; }
+  .cell.wire-end-yellow { box-shadow: 0 0 0 3px #cc08; }
+</style>
+</head>
+<body>
+
+<h1>Ethanol Content Analyzer — Stripboard Layout</h1>
+<h2>ESP32-C3 Super Mini + SN65HVD230 + MP1584EN</h2>
+<div class="subtitle">Cut rectangle: 20 cols × 15 rows &nbsp;|&nbsp; Horizontal copper traces &nbsp;|&nbsp; Hover cells for details</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#2266cc;border:2px solid #4488ee;color:#fff">E</div> ESP32 Left</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#1a5599;border:2px solid #3377bb;color:#cde">E</div> ESP32 Right</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#22aa44;border:2px solid #44cc66;color:#fff">S</div> SN65HVD230</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#cc2222;border:2px solid #ee4444;color:#fff">J1</div> 12V Power</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#cc8800;border:2px solid #eeaa22;color:#fff">J2</div> Sensor</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#8822cc;border:2px solid #aa44ee;color:#fff">J3</div> CAN Bus</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#cc4400;border:2px solid #ee6622;color:#fff">D</div> 1N4007</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ccaa00;border:2px solid #eecc22;color:#000">C</div> 100uF Cap</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#886644;border:2px solid #aa8866;color:#fff">R</div> Resistor</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#aaaa00;border:2px solid #cccc22;color:#000">T</div> Tap Point</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#1a1a2e;border:2px dashed #f44;color:#f66">X</div> Track Cut</div>
+</div>
+
+<div class="wire-toggle">
+  <button id="wireBtn" class="active" onclick="toggleWires()">Show Jumper Wires</button>
+  <span>Hover a wire in the list below to highlight it on the board</span>
+</div>
+
+<div class="board-wrap">
+  <div class="board-container" id="board"></div>
+  <svg class="wire-svg" id="wireSvg"></svg>
+</div>
+
+<div class="info-cards">
+  <div class="card">
+    <h3>Auto Trace Connections (no wires!)</h3>
+    <ul>
+      <li><b>Row E:</b> SN65:3V3 (col 5) ↔ ESP32:3V3 (col 10)</li>
+      <li><b>Row G:</b> SN65:CTX (col 5) ↔ ESP32:GP5 (col 10) — CAN TX</li>
+      <li><b>Row H:</b> SN65:CRX (col 5) ↔ ESP32:GP6 (col 10) — CAN RX</li>
+      <li><b>Row I:</b> J3:CANH (col 1) ↔ SN65:CANH (col 5)</li>
+      <li><b>Row J:</b> J3:CANL (col 1) ↔ SN65:CANL (col 5)</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Jumper Wires (8 + 4 MP1584)</h3>
+    <div class="wire" data-wire="W1" onmouseenter="hlWire('W1')" onmouseleave="hlWire(null)"><span class="wire-dot wire-red"></span> W1: Row C col 5 → Row A col 5 &nbsp;(5V from MP1584)</div>
+    <div class="wire" data-wire="W2" onmouseenter="hlWire('W2')" onmouseleave="hlWire(null)"><span class="wire-dot wire-red"></span> W2: Row A col 18 → Row M col 18 &nbsp;(12V → sensor 12V)</div>
+    <div class="wire" data-wire="W3" onmouseenter="hlWire('W3')" onmouseleave="hlWire(null)"><span class="wire-dot wire-black"></span> W3: Row D col 8 → Row B col 8 &nbsp;(ESP32 GND → GND bus)</div>
+    <div class="wire" data-wire="W4" onmouseenter="hlWire('W4')" onmouseleave="hlWire(null)"><span class="wire-dot wire-black"></span> W4: Row F col 3 → Row B col 3 &nbsp;(SN65 GND → GND bus)</div>
+    <div class="wire" data-wire="W5" onmouseenter="hlWire('W5')" onmouseleave="hlWire(null)"><span class="wire-dot wire-black"></span> W5: Row O col 18 → Row B col 18 &nbsp;(sensor GND → GND bus)</div>
+    <div class="wire" data-wire="W6" onmouseenter="hlWire('W6')" onmouseleave="hlWire(null)"><span class="wire-dot wire-black"></span> W6: Row K col 17 → Row B col 17 &nbsp;(divider end → GND)</div>
+    <div class="wire" data-wire="W7" onmouseenter="hlWire('W7')" onmouseleave="hlWire(null)"><span class="wire-dot wire-yellow"></span> W7: Row N col 18 → Row K col 2 &nbsp;(sensor SIG → divider in)</div>
+    <div class="wire" data-wire="W8" onmouseenter="hlWire('W8')" onmouseleave="hlWire(null)"><span class="wire-dot wire-yellow"></span> W8: Row K col 7 → Row F col 12 &nbsp;(tap → GPIO4 row)</div>
+  </div>
+  <div class="card">
+    <h3>Track Cuts (17 total)</h3>
+    <ul>
+      <li><b>Row A col 3:</b> diode — reverse polarity protection</li>
+      <li><b>Rows C–J col 13:</b> (×8) isolate ESP32 left/right</li>
+      <li><b>Row C col 9, D col 9:</b> isolate left side from ESP32</li>
+      <li><b>Row E col 4, G col 4, H col 4:</b> isolate left of SN65</li>
+      <li><b>Row F col 7:</b> SN65:GND from ESP32:GP4</li>
+      <li><b>Row I col 7, J col 7:</b> CAN from ESP32 GP7/GP8</li>
+      <li><b>Row K cols 4, 9, 14:</b> voltage divider sections</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>MP1584EN Buck Converter (12V→5V)</h3>
+    <p>Mount with tape on back of board. 4 wires:</p>
+    <ul>
+      <li><b>IN+</b> → Row A col 8 (after diode) — 12V</li>
+      <li><b>IN−</b> → Row B col 19 — GND</li>
+      <li><b>OUT+</b> → Row C col 5 — 5V</li>
+      <li><b>OUT−</b> → Row B col 20 — GND</li>
+    </ul>
+    <p style="color:#e88;margin-top:4px;">⚠ Set trimpot to 5V BEFORE connecting!</p>
+  </div>
+  <div class="card">
+    <h3>Power Protection (Row A–B)</h3>
+    <ul>
+      <li><b>D1 (1N4007):</b> Anode col 2, cathode col 4. Band → RIGHT.</li>
+      <li><b>C1 (100µF 50V):</b> + Row A col 6, − Row B col 6. Observe polarity!</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Voltage Divider (Row K)</h3>
+    <p>Signal(5V) → R1 → <b>Tap(3.33V)</b> → R2 → R3 → GND</p>
+    <ul>
+      <li>R1: col 2 → col 6 (bridges cut at col 4)</li>
+      <li>R2: col 8 → col 11 (bridges cut at col 9)</li>
+      <li>R3: col 13 → col 16 (bridges cut at col 14)</li>
+    </ul>
+    <p style="margin-top:3px;">Tap = 5V × 20K/30K = <b>3.33V</b> ✓</p>
+  </div>
+</div>
+
+<script>
+const ROWS = 15;
+const COLS = 20;
+const rowLabels = 'ABCDEFGHIJKLMNO'.split('');
+
+const rowNotes = {
+  0: '12V bus (protected)',
+  1: 'GND bus',
+  2: '5V → ESP32',
+  3: 'ESP32 GND',
+  4: '3V3 connected!',
+  5: 'SN65:GND | GP4',
+  6: 'CAN TX connected!',
+  7: 'CAN RX connected!',
+  8: 'CANH connected!',
+  9: 'CANL connected!',
+  10: 'voltage divider',
+  11: '',
+  12: 'sensor 12V',
+  13: 'sensor SIG',
+  14: 'sensor GND',
+};
+
+const cells = {};
+function c(row, col, cls, label, tip) {
+  cells[`${row},${col}`] = { cls, label: label || '', tip: tip || '' };
+}
+
+// Row A (0): 12V bus + diode + cap
+c(0, 0, 'j1', '12V', 'J1: 12V power input (col 1)');
+c(0, 1, 'diode', '◀D', '1N4007 anode (col 2)');
+c(0, 2, 'cut', 'X', 'Track cut col 3 — forces current through diode');
+c(0, 3, 'diode', 'D▶', '1N4007 cathode — band here (col 4)');
+c(0, 5, 'cap-pos', 'C+', '100µF 50V cap + leg (col 6)');
+
+// Row B (1): GND bus + cap
+c(1, 0, 'j1', 'GND', 'J1: GND power input (col 1)');
+c(1, 5, 'cap-neg', 'C−', '100µF 50V cap − leg (col 6)');
+
+// Row C (2): ESP32 5V / GP0
+c(2, 8, 'cut', 'X', 'Isolate left from ESP32 5V (col 9)');
+c(2, 9, 'esp-left', '5V', 'ESP32: 5V power (col 10)');
+c(2, 12, 'cut', 'X', 'Isolate ESP32 left/right (col 13)');
+c(2, 15, 'esp-right', 'GP0', 'ESP32: GPIO0 (col 16)');
+
+// Row D (3): ESP32 GND / GP1
+c(3, 8, 'cut', 'X', 'Isolate left from ESP32 GND (col 9)');
+c(3, 9, 'esp-left', 'GND', 'ESP32: GND (col 10)');
+c(3, 12, 'cut', 'X', 'Isolate ESP32 left/right (col 13)');
+c(3, 15, 'esp-right', 'GP1', 'ESP32: GPIO1 (col 16)');
+
+// Row E (4): 3V3 connected! SN65:3V3 + ESP32:3V3
+c(4, 3, 'cut', 'X', 'Isolate left of SN65 3V3 (col 4)');
+c(4, 4, 'sn65', '3V3', 'SN65: 3.3V (col 5) — TRACE → ESP32:3V3');
+c(4, 9, 'esp-left', '3V3', 'ESP32: 3.3V (col 10) — TRACE → SN65:3V3');
+c(4, 12, 'cut', 'X', 'Isolate ESP32 left/right (col 13)');
+c(4, 15, 'esp-right', 'GP2', 'ESP32: GPIO2 (col 16)');
+
+// Row F (5): SN65:GND | ESP32:GP4
+c(5, 4, 'sn65', 'GND', 'SN65: GND (col 5)');
+c(5, 6, 'cut', 'X', 'Separate SN65:GND from GP4 (col 7)');
+c(5, 9, 'esp-left', 'GP4', 'ESP32: GPIO4 — sensor input (col 10)');
+c(5, 12, 'cut', 'X', 'Isolate ESP32 left/right (col 13)');
+c(5, 15, 'esp-right', 'GP3', 'ESP32: GPIO3 (col 16)');
+
+// Row G (6): CAN TX connected!
+c(6, 3, 'cut', 'X', 'Isolate left of SN65 CTX (col 4)');
+c(6, 4, 'sn65', 'CTX', 'SN65: CAN TX (col 5) — TRACE → ESP32:GP5');
+c(6, 9, 'esp-left', 'GP5', 'ESP32: GPIO5 CAN TX (col 10)');
+c(6, 12, 'cut', 'X', 'Isolate ESP32 left/right (col 13)');
+c(6, 15, 'esp-right', 'G10', 'ESP32: GPIO10 (col 16)');
+
+// Row H (7): CAN RX connected!
+c(7, 3, 'cut', 'X', 'Isolate left of SN65 CRX (col 4)');
+c(7, 4, 'sn65', 'CRX', 'SN65: CAN RX (col 5) — TRACE → ESP32:GP6');
+c(7, 9, 'esp-left', 'GP6', 'ESP32: GPIO6 CAN RX (col 10)');
+c(7, 12, 'cut', 'X', 'Isolate ESP32 left/right (col 13)');
+c(7, 15, 'esp-right', 'G20', 'ESP32: GPIO20 (col 16)');
+
+// Row I (8): CANH
+c(8, 0, 'j3', 'H', 'J3: CAN High (col 1)');
+c(8, 4, 'sn65', 'H', 'SN65: CANH (col 5) — TRACE → J3');
+c(8, 6, 'cut', 'X', 'Isolate CAN from ESP32 GP7 (col 7)');
+c(8, 9, 'esp-left', 'GP7', 'ESP32: GPIO7 (col 10)');
+c(8, 12, 'cut', 'X', 'Isolate ESP32 left/right (col 13)');
+c(8, 15, 'esp-right', 'G21', 'ESP32: GPIO21 (col 16)');
+
+// Row J (9): CANL
+c(9, 0, 'j3', 'L', 'J3: CAN Low (col 1)');
+c(9, 4, 'sn65', 'L', 'SN65: CANL (col 5) — TRACE → J3');
+c(9, 6, 'cut', 'X', 'Isolate CAN from ESP32 GP8 (col 7)');
+c(9, 9, 'esp-left', 'GP8', 'ESP32: GPIO8 (col 10)');
+c(9, 12, 'cut', 'X', 'Isolate ESP32 left/right (col 13)');
+c(9, 15, 'esp-right', 'GP9', 'ESP32: GPIO9 (col 16)');
+
+// Row K (10): Voltage divider
+c(10, 1, 'resistor', 'R1a', 'R1 leg A: signal side (col 2)');
+c(10, 3, 'cut', 'X', 'Divider cut A|B (col 4)');
+c(10, 5, 'resistor', 'R1b', 'R1 leg B: tap side (col 6)');
+c(10, 6, 'tap', 'TAP', 'Tap point 3.33V → wire to GPIO4 (col 7)');
+c(10, 7, 'resistor', 'R2a', 'R2 leg A: tap side (col 8)');
+c(10, 8, 'cut', 'X', 'Divider cut B|C (col 9)');
+c(10, 10, 'resistor', 'R2b', 'R2 leg B: mid side (col 11)');
+c(10, 12, 'resistor', 'R3a', 'R3 leg A: mid side (col 13)');
+c(10, 13, 'cut', 'X', 'Divider cut C|D (col 14)');
+c(10, 15, 'resistor', 'R3b', 'R3 leg B: GND side (col 16)');
+
+// Row L (11): spacer — empty
+
+// Row M (12): sensor 12V
+c(12, 17, 'j2', '12V', 'J2: Sensor 12V power (col 18)');
+
+// Row N (13): sensor SIG
+c(13, 17, 'j2', 'SIG', 'J2: Sensor signal 5V PWM (col 18)');
+
+// Row O (14): sensor GND
+c(14, 17, 'j2', 'GND', 'J2: Sensor GND (col 18)');
+
+// ESP32 module body (cols 10-15, rows C-J = 2-9)
+for (let r = 2; r <= 9; r++) {
+  for (let cc = 10; cc <= 14; cc++) {
+    if (!cells[`${r},${cc}`]) c(r, cc, 'esp-body', '', 'ESP32-C3 Super Mini module body');
+  }
+}
+
+// Jumper wires: [id, fromRow, fromCol, toRow, toCol, color, description]
+const wires = [
+  ['W1', 2, 4, 0, 4, '#e44', '5V from MP1584'],
+  ['W2', 0, 17, 12, 17, '#e44', '12V → sensor 12V'],
+  ['W3', 3, 7, 1, 7, '#aaa', 'ESP32 GND → GND bus'],
+  ['W4', 5, 2, 1, 2, '#aaa', 'SN65 GND → GND bus'],
+  ['W5', 14, 17, 1, 17, '#aaa', 'sensor GND → GND bus'],
+  ['W6', 10, 16, 1, 16, '#aaa', 'divider end → GND'],
+  ['W7', 13, 17, 10, 1, '#cc0', 'sensor SIG → divider in'],
+  ['W8', 10, 6, 5, 11, '#cc0', 'tap → GPIO4 row'],
+];
+
+// Build the grid
+const board = document.getElementById('board');
+board.style.gridTemplateColumns = `26px repeat(${COLS}, 32px) auto`;
+board.style.gridTemplateRows = `30px repeat(${ROWS}, 32px)`;
+
+// Column header row
+const corner = document.createElement('div');
+corner.className = 'row-label';
+board.appendChild(corner);
+for (let col = 0; col < COLS; col++) {
+  const lbl = document.createElement('div');
+  lbl.className = 'col-label';
+  lbl.textContent = col + 1;
+  board.appendChild(lbl);
+}
+// note column header
+const noteHdr = document.createElement('div');
+noteHdr.className = 'row-note';
+noteHdr.style.fontWeight = '700';
+noteHdr.style.color = '#aa9';
+board.appendChild(noteHdr);
+
+// Rows
+for (let row = 0; row < ROWS; row++) {
+  const rl = document.createElement('div');
+  rl.className = 'row-label';
+  rl.textContent = rowLabels[row];
+  board.appendChild(rl);
+
+  for (let col = 0; col < COLS; col++) {
+    const data = cells[`${row},${col}`];
+    const cell = document.createElement('div');
+    if (data) {
+      cell.className = `cell ${data.cls}`;
+      cell.textContent = data.label;
+      if (data.tip) {
+        const tt = document.createElement('div');
+        tt.className = 'tooltip';
+        tt.textContent = data.tip;
+        cell.appendChild(tt);
+      }
+    } else {
+      cell.className = 'cell hole';
+    }
+    board.appendChild(cell);
+  }
+
+  // Row note
+  const note = document.createElement('div');
+  note.className = 'row-note';
+  note.textContent = rowNotes[row] || '';
+  board.appendChild(note);
+}
+
+// Store cell elements for wire overlay
+const cellEls = {};
+const allCells = board.querySelectorAll('.cell');
+let ci = 0;
+for (let row = 0; row < ROWS; row++) {
+  for (let col = 0; col < COLS; col++) {
+    cellEls[`${row},${col}`] = allCells[ci++];
+  }
+}
+
+// Draw wire overlay lines
+const svg = document.getElementById('wireSvg');
+const wireLines = {};
+let wiresVisible = true;
+
+function drawWires() {
+  const wrap = document.querySelector('.board-wrap');
+  const bRect = wrap.getBoundingClientRect();
+  svg.setAttribute('viewBox', `0 0 ${bRect.width} ${bRect.height}`);
+  svg.style.width = bRect.width + 'px';
+  svg.style.height = bRect.height + 'px';
+
+  svg.innerHTML = '';
+  wires.forEach(([id, r1, c1, r2, c2, color, desc]) => {
+    const el1 = cellEls[`${r1},${c1}`];
+    const el2 = cellEls[`${r2},${c2}`];
+    if (!el1 || !el2) return;
+    const rect1 = el1.getBoundingClientRect();
+    const rect2 = el2.getBoundingClientRect();
+    const x1 = rect1.left + rect1.width/2 - bRect.left;
+    const y1 = rect1.top + rect1.height/2 - bRect.top;
+    const x2 = rect2.left + rect2.width/2 - bRect.left;
+    const y2 = rect2.top + rect2.height/2 - bRect.top;
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('stroke', color);
+    line.classList.add('wire-line');
+    line.dataset.wire = id;
+    svg.appendChild(line);
+    wireLines[id] = line;
+
+    // Mark endpoints
+    const colorClass = color === '#e44' ? 'wire-end-red' : color === '#cc0' ? 'wire-end-yellow' : 'wire-end-black';
+    el1.classList.add('wire-end', colorClass);
+    el1.dataset.wireId = id;
+    el2.classList.add('wire-end', colorClass);
+    el2.dataset.wireId = id;
+
+    // Add wire label near midpoint
+    const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    txt.setAttribute('x', (x1+x2)/2 + 8);
+    txt.setAttribute('y', (y1+y2)/2 - 6);
+    txt.setAttribute('fill', color);
+    txt.setAttribute('font-size', '10');
+    txt.setAttribute('font-weight', '700');
+    txt.setAttribute('font-family', 'Segoe UI, sans-serif');
+    txt.dataset.wire = id;
+    txt.classList.add('wire-line');
+    txt.textContent = id;
+    svg.appendChild(txt);
+  });
+}
+
+function toggleWires() {
+  wiresVisible = !wiresVisible;
+  svg.style.display = wiresVisible ? '' : 'none';
+  document.getElementById('wireBtn').classList.toggle('active', wiresVisible);
+  // toggle endpoint markers
+  document.querySelectorAll('.wire-end').forEach(el => {
+    el.style.boxShadow = wiresVisible ? '' : 'none';
+  });
+}
+
+function hlWire(id) {
+  Object.values(wireLines).forEach(l => l); // ensure exist
+  svg.querySelectorAll('.wire-line').forEach(el => {
+    if (id === null) {
+      el.classList.remove('dimmed', 'highlighted');
+    } else if (el.dataset.wire === id) {
+      el.classList.add('highlighted');
+      el.classList.remove('dimmed');
+    } else {
+      el.classList.add('dimmed');
+      el.classList.remove('highlighted');
+    }
+  });
+}
+
+// Draw on load and resize
+window.addEventListener('load', () => setTimeout(drawWires, 50));
+window.addEventListener('resize', drawWires);
+</script>
+
+</body>
+</html>

@@ -48,10 +48,18 @@ extern volatile bool newData;
 extern volatile uint32_t lastValidReadingMs;
 extern bool sensorTimedOut;
 
+// BLE UUIDs
+#define BLE_DEVICE_NAME         "Ethanol Analyzer"
+#define BLE_SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+#define BLE_ETHANOL_UUID        "beb5483e-36e1-4688-b7f5-ea07361b26a8"
+#define BLE_TEMPERATURE_UUID    "beb5483f-36e1-4688-b7f5-ea07361b26a8"
+
 // Function declarations
 bool calculateFrequency();
 void frequencyToEthanolContent(float frequency, float scaler);
 void pulseWidthToFuelTemperature(uint32_t pulseWidthUs);
 void checkSensorTimeout();
+void setupBLE();
+void updateBLE();
 
 void IRAM_ATTR onSensorEdge();

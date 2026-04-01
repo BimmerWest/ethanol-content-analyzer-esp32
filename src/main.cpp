@@ -1,4 +1,8 @@
 #include "main.h"
+#include <NimBLEDevice.h>
+
+static NimBLECharacteristic* ethanolChar = nullptr;
+static NimBLECharacteristic* temperatureChar = nullptr;
 
 // State variables
 float ethanol = 0.f;
@@ -27,6 +31,8 @@ void setup()
   pinMode(ECA_INPUT, INPUT);
   attachInterrupt(digitalPinToInterrupt(ECA_INPUT), onSensorEdge, CHANGE);
 
+  setupBLE();
+
   Serial.println("Ethanol Content Analyzer - ESP32-C3");
   Serial.println("Waiting for sensor data...");
 }
@@ -44,6 +50,7 @@ void loop()
     pulseWidthToFuelTemperature(capturedPulseWidth);
 
     newData = false;
+    updateBLE();
 
     Serial.print("Period (us): ");
     Serial.print(period);
@@ -149,6 +156,47 @@ void pulseWidthToFuelTemperature(uint32_t pw) {
   } else {
     fuelTemperature = (1 - TEMPERATURE_ALPHA) * fuelTemperature + TEMPERATURE_ALPHA * rawTemp;
   }
+}
+
+/**
+ * Initializes BLE server, service, and characteristics with notify support
+ */
+void setupBLE() {
+  NimBLEDevice::init(BLE_DEVICE_NAME);
+
+  NimBLEServer* server = NimBLEDevice::createServer();
+  NimBLEService* service = server->createService(BLE_SERVICE_UUID);
+
+  ethanolChar = service->createCharacteristic(
+    BLE_ETHANOL_UUID,
+    NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY
+  );
+
+  temperatureChar = service->createCharacteristic(
+    BLE_TEMPERATURE_UUID,
+    NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY
+  );
+
+  service->start();
+  NimBLEDevice::startAdvertising();
+
+  Serial.println("BLE advertising as \"" BLE_DEVICE_NAME "\"");
+}
+
+/**
+ * Pushes current ethanol and temperature values to BLE characteristics
+ * Values are sent as UTF-8 strings for easy reading in LightBlue
+ */
+void updateBLE() {
+  char buf[16];
+
+  snprintf(buf, sizeof(buf), "%.1f%%", ethanol);
+  ethanolChar->setValue(buf);
+  ethanolChar->notify();
+
+  snprintf(buf, sizeof(buf), "%.1f C", fuelTemperature);
+  temperatureChar->setValue(buf);
+  temperatureChar->notify();
 }
 
 /**

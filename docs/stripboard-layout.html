@@ -145,8 +145,8 @@
       <li><b>Row 3:</b> SN65:3V3 (B) → trace → ESP32:3V3 (D)</li>
       <li><b>Row 5:</b> SN65:CTX (B) → trace → ESP32:GP5 (D)</li>
       <li><b>Row 6:</b> SN65:CRX (B) → trace → ESP32:GP6 (D)</li>
-      <li><b>Row 7:</b> CAN-H (A) → trace → SN65:CANH (B) → trace → ESP32:GP7 (D)</li>
-      <li><b>Row 8:</b> CAN-L (A) → trace → SN65:CANL (B) → trace → ESP32:GP8 (D)</li>
+      <li><b>Row 7:</b> CAN-H (A) → trace → SN65:CANH (B) &nbsp;[cut at C]</li>
+      <li><b>Row 8:</b> CAN-L (A) → trace → SN65:CANL (B) &nbsp;[cut at C]</li>
     </ul>
   </div>
   <div class="card">
@@ -159,6 +159,8 @@
     <ul>
       <li><b>Row 4, between C–D:</b> isolate SN65:GND from ESP32:GP4</li>
       <li><b>Rows 1–8, col I:</b> (×8) isolate ESP32 right pins from left traces</li>
+      <li><b>Row 7, col C:</b> isolate CANH from GP7</li>
+      <li><b>Row 8, col C:</b> isolate CANL from GP8</li>
       <li><b>Row 11, between E–F:</b> isolate D cathode from D anode</li>
     </ul>
   </div>
@@ -256,12 +258,14 @@ c(5, 9, 'esp-right', 'ESP', 'ESP32 right side row 6');
 // Row 7 (idx 6): CANH
 c(6, 0, 'j-can', 'H', 'CAN-H connector (col A)');
 c(6, 1, 'sn65', 'CANH', 'SN65: CANH (col B)');
+c(6, 2, 'cut', 'X', 'Track cut — isolate CANH from GP7');
 c(6, 3, 'esp-left', 'GP7', 'ESP32: GPIO7 (col D)');
 c(6, 9, 'esp-right', 'ESP', 'ESP32 right side row 7');
 
 // Row 8 (idx 7): CANL
 c(7, 0, 'j-can', 'L', 'CAN-L connector (col A)');
 c(7, 1, 'sn65', 'CANL', 'SN65: CANL (col B)');
+c(7, 2, 'cut', 'X', 'Track cut — isolate CANL from GP8');
 c(7, 3, 'esp-left', 'GP8', 'ESP32: GPIO8 (col D)');
 c(7, 9, 'esp-right', 'ESP', 'ESP32 right side row 8');
 

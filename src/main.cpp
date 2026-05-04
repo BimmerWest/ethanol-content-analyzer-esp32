@@ -11,6 +11,7 @@ float fuelTemperature = SAFE_TEMP_DEFAULT;
 bool canReady = false;
 uint32_t lastSensorUpdateMs = 0;
 uint32_t lastSerialReadingMs = 0;
+uint32_t lastPeriodUs = 0;
 SensorState sensorState = SENSOR_INITIALIZING;
 uint8_t stablePulseCount = 0;
 
@@ -81,7 +82,7 @@ void loop()
 
       if (validation == SENSOR_OK) {
         frequencyToEthanolContent(frequency, frequencyScaler);
-        dutyCycleToFuelTemperature(dutyCycle);
+        dutyCycleToFuelTemperature(dutyCycle, lastPeriodUs);
 
         if (sensorState == SENSOR_INITIALIZING) {
           stablePulseCount++;
@@ -169,6 +170,7 @@ bool calculateFrequency()
     return false;
   }
 
+  lastPeriodUs = capturedPeriod;
   dutyCycle = capturedDutyCycle;
 
   if (frequency == 0) {
@@ -203,10 +205,11 @@ void frequencyToEthanolContent(float measuredFrequency, float scaler)
   ethanol = max(0.0f, min(ETHANOL_MAX_CAP, ethanol));
 }
 
-void dutyCycleToFuelTemperature(float dc)
+void dutyCycleToFuelTemperature(float dc, uint32_t periodUs)
 {
-  float clampedDuty = max(10.0f, min(90.0f, dc));
-  fuelTemperature = TEMP_MIN + (clampedDuty - 10.0f) * (TEMP_MAX - TEMP_MIN) / 80.0f;
+  float lowPulseMs = ((100.0f - dc) * (float)periodUs) / 100000.0f;
+  fuelTemperature = 41.5f * lowPulseMs - 81.25f;
+  fuelTemperature = max(TEMP_MIN, min(TEMP_MAX, fuelTemperature));
 }
 
 void initCAN()

@@ -67,6 +67,7 @@ extern float fuelTemperature;
 extern bool canReady;
 extern uint32_t lastSensorUpdateMs;
 extern uint32_t lastSerialReadingMs;
+extern uint32_t lastPeriodUs;
 extern SensorState sensorState;
 extern uint8_t stablePulseCount;
 
@@ -82,7 +83,7 @@ extern volatile bool newData;
 bool calculateFrequency();
 SensorState validateSignal(float freq, float duty);
 void frequencyToEthanolContent(float measuredFrequency, float scaler);
-void dutyCycleToFuelTemperature(float dc);
+void dutyCycleToFuelTemperature(float dc, uint32_t periodUs);
 
 void onSensorEdge();
 
